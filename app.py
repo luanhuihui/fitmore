@@ -89,12 +89,14 @@ with tab2:
     else:
         if "confirm_delete" not in st.session_state:
             st.session_state.confirm_delete = None
+        if "editing" not in st.session_state:
+            st.session_state.editing = None
 
         for r in rows:
             d, w, workout_txt, diet_txt, note_txt, cb, ci = r
             with st.container():
                 st.markdown('<div class="card">', unsafe_allow_html=True)
-                col_title, col_del = st.columns([5, 1])
+                col_title, col_edit, col_del = st.columns([5, 0.6, 0.6])
                 with col_title:
                     header = f"**{d}**"
                     if w:
@@ -104,16 +106,61 @@ with tab2:
                     if ci:
                         header += f"　🍽️ 摄入 {ci:.0f} kcal"
                     st.markdown(header)
+                with col_edit:
+                    if st.button("✏️", key=f"edit_{d}", help="编辑此记录"):
+                        st.session_state.editing = d if st.session_state.editing != d else None
                 with col_del:
                     if st.button("🗑️", key=f"del_{d}", help="删除此记录"):
                         st.session_state.confirm_delete = d
 
-                if workout_txt:
-                    st.markdown(f"🏋️ {workout_txt}")
-                if diet_txt:
-                    st.markdown(f"🥗 {diet_txt}")
-                if note_txt:
-                    st.caption(f"📌 {note_txt}")
+                if st.session_state.editing != d:
+                    if workout_txt:
+                        st.markdown(f"🏋️ {workout_txt}")
+                    if diet_txt:
+                        st.markdown(f"🥗 {diet_txt}")
+                    if note_txt:
+                        st.caption(f"📌 {note_txt}")
+                else:
+                    with st.form(key=f"edit_form_{d}", border=False):
+                        e_col1, e_col2 = st.columns(2)
+                        with e_col1:
+                            e_weight = st.number_input("体重 (kg)", min_value=0.0, max_value=300.0,
+                                                       step=0.1, format="%.1f",
+                                                       value=float(w) if w else 0.0)
+                        with e_col2:
+                            pass
+                        e_workout = st.text_area("🏋️ 训练内容", value=workout_txt or "", height=80)
+                        e_diet    = st.text_area("🥗 饮食内容", value=diet_txt or "", height=80)
+                        e_col3, e_col4 = st.columns(2)
+                        with e_col3:
+                            e_burned = st.number_input("🔥 消耗热量 (kcal)", min_value=0, max_value=10000,
+                                                       step=10, value=int(cb) if cb else 0)
+                        with e_col4:
+                            e_intake = st.number_input("🍽️ 摄入热量 (kcal)", min_value=0, max_value=10000,
+                                                       step=10, value=int(ci) if ci else 0)
+                        e_note = st.text_area("📌 备注", value=note_txt or "", height=60)
+                        s_col1, s_col2 = st.columns(2)
+                        with s_col1:
+                            save_edit = st.form_submit_button("💾 保存修改", use_container_width=True, type="primary")
+                        with s_col2:
+                            cancel_edit = st.form_submit_button("取消", use_container_width=True)
+
+                    if save_edit:
+                        upsert_record(
+                            d,
+                            e_weight if e_weight > 0 else None,
+                            e_workout.strip(),
+                            e_diet.strip(),
+                            e_note.strip(),
+                            e_burned if e_burned > 0 else None,
+                            e_intake if e_intake > 0 else None,
+                        )
+                        st.session_state.editing = None
+                        st.rerun()
+                    if cancel_edit:
+                        st.session_state.editing = None
+                        st.rerun()
+
                 st.markdown("</div>", unsafe_allow_html=True)
                 st.divider()
 
