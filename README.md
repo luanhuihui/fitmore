@@ -22,5 +22,6 @@ pip install -r requirements.txt
 
 ```bash
 streamlit run app.py
+//之后访问http://localhost:8501/
 ```
 
