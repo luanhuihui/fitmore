@@ -14,3 +14,13 @@ FitMore 是一个本地运行的健身记录小工具，用于记录每日训练
 
 ```bash
 pip install -r requirements.txt
+```
+
+
+
+# 运行
+
+```bash
+streamlit run app.py
+```
+
