@@ -115,11 +115,11 @@ with tab2:
 
                 if st.session_state.editing != d:
                     if workout_txt:
-                        st.markdown(f"🏋️ {workout_txt}")
+                        st.markdown("🏋️ " + workout_txt.replace("\n", "  \n"))
                     if diet_txt:
-                        st.markdown(f"🥗 {diet_txt}")
+                        st.markdown("🥗 " + diet_txt.replace("\n", "  \n"))
                     if note_txt:
-                        st.caption(f"📌 {note_txt}")
+                        st.caption("📌 " + note_txt.replace("\n", "  \n"))
                 else:
                     with st.form(key=f"edit_form_{d}", border=False):
                         e_col1, e_col2 = st.columns(2)
